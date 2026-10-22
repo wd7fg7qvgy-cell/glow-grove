@@ -1,0 +1,374 @@
+<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; base-uri 'none'; form-action 'none'">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glow Grove</title>
+<style>
+:root{--bg1:#0B2B26;--bg2:#16423C;--gold:#F6E7A1;--mint:#A8DFB9;--leaf:#43A86B;--text:#E8F5EC;--card:rgba(255,255,255,.07);--line:rgba(246,231,161,.2)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2) 60%,#0d322d) fixed;line-height:1.5}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;max-width:1040px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px}
+.logo b{font-family:Georgia,"Times New Roman",serif;font-size:24px;color:var(--gold);letter-spacing:1px;display:block;line-height:1.1}
+.logo small{display:block;font-size:12px;color:var(--mint)}
+.logo .em{font-size:28px}
+.lang{background:rgba(246,231,161,.12);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--mint);white-space:nowrap}
+.lang span.on{color:var(--bg1);background:var(--gold);border-radius:10px;padding:2px 8px}
+.lang span{padding:2px 4px}
+main{max-width:1040px;margin:0 auto;padding:4px 16px 40px;display:grid;gap:16px}
+@media(min-width:860px){main{grid-template-columns:1.05fr 1fr;align-items:start}.left{position:sticky;top:12px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;backdrop-filter:blur(4px)}
+h2{margin:0 0 10px;font-size:15px;color:var(--gold);letter-spacing:.3px}
+.right{display:grid;gap:16px}
+.stage{position:relative;height:300px;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 80% 12%,rgba(246,231,161,.25),transparent 35%),linear-gradient(#071f1b,#12403a);border:1px solid rgba(255,255,255,.06)}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+#treeG{transition:transform .9s cubic-bezier(.3,1.3,.5,1);transform-origin:150px 272px}
+.moon{position:absolute;right:8%;top:8%;width:34px;height:34px;border-radius:50%;background:#FBF3C8;box-shadow:0 0 30px 10px rgba(246,231,161,.35)}
+.ff{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px 4px rgba(246,231,161,.7);animation:drift var(--d) ease-in-out infinite alternate,blink var(--b) ease-in-out infinite}
+@keyframes drift{to{transform:translate(var(--x),var(--y))}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.fly{position:fixed;width:10px;height:10px;border-radius:50%;background:#fff6c4;box-shadow:0 0 16px 8px rgba(246,231,161,.85);z-index:50;pointer-events:none}
+.petal{animation:fall var(--f) linear infinite;transform-box:fill-box}
+@keyframes fall{from{transform:translateY(-20px);opacity:0}15%{opacity:.9}to{transform:translateY(240px) translateX(24px);opacity:0}}
+.celebrate{position:absolute;left:50%;top:14px;transform:translate(-50%,-30px);opacity:0;background:var(--gold);color:var(--bg1);font-weight:800;border-radius:24px;padding:8px 16px;font-size:14px;white-space:nowrap;transition:.5s;pointer-events:none;box-shadow:0 6px 24px rgba(246,231,161,.4)}
+.celebrate.show{opacity:1;transform:translate(-50%,0)}
+.lvl{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 8px;gap:8px;flex-wrap:wrap}
+.lvl b{font-size:18px;color:var(--gold)}
+.lvl span{font-size:13px;color:var(--mint)}
+.bar{height:14px;border-radius:10px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--leaf),var(--gold));border-radius:10px;transition:width .8s ease}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:rgba(0,0,0,.2);border-radius:14px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:20px;color:var(--gold)}
+.stat small{font-size:11px;color:var(--mint)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:20px;padding:7px 12px;font-size:14px;min-height:40px}
+.chip[aria-pressed=true]{background:var(--gold);color:var(--bg1);font-weight:700;border-color:var(--gold)}
+.stamps{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:420px){.stamps{grid-template-columns:repeat(3,1fr)}}
+.stamp{background:var(--gold);color:var(--bg1);border:0;border-radius:20px;padding:12px 8px;font-size:15px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
+.stamp .e{font-size:28px}
+.stamp:hover{transform:translateY(-2px);box-shadow:0 0 22px rgba(246,231,161,.5)}
+.stamp:active{transform:scale(.94)}
+input[type=text]{width:100%;margin-top:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);font:inherit;font-size:15px}
+input::placeholder{color:#8fb9a0}
+.hint{font-size:12px;color:var(--mint);margin:10px 0 0}
+.toast{min-height:44px;margin-top:10px;padding:10px 14px;border-radius:14px;background:rgba(168,223,185,.14);color:var(--text);font-size:14px;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.feed{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.feed li{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.18);border-radius:16px;padding:10px 12px;animation:pop .5s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.av{flex:none;width:38px;height:38px;border-radius:50%;background:rgba(246,231,161,.16);display:grid;place-items:center;font-size:20px}
+.fb{min-width:0;flex:1}
+.fl{font-size:14px;font-weight:700}
+.fl .st{display:inline-block;background:var(--gold);color:var(--bg1);border-radius:12px;padding:0 8px;font-size:12px;margin-left:4px;font-weight:700}
+.fm{font-size:13px;color:#cfe9d7;margin-top:2px;overflow-wrap:anywhere}
+.ft{font-size:11px;color:#8fb9a0}
+.rank{display:grid;gap:8px}
+.rk{display:grid;grid-template-columns:auto 84px 1fr auto;align-items:center;gap:8px;font-size:14px}
+.rk .bar{height:10px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--mint);font-size:12px;padding:0 4px}
+.reset{background:transparent;border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-size:12px;color:var(--mint)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="em" aria-hidden="true">🌳</span><div><b>Glow Grove</b><small data-i18n="tagline"></small></div></div>
+  <button class="lang" id="langBtn" data-demo="lang-switch" data-i18n-aria="langAria" type="button"><span id="lj">日本語</span><span id="le">EN</span></button>
+</header>
+<main>
+  <section class="left card" aria-labelledby="treeH">
+    <h2 id="treeH" data-i18n="treeTitle"></h2>
+    <div class="stage" id="stage" data-demo="tree-stage">
+      <div class="moon" aria-hidden="true"></div>
+      <svg viewBox="0 0 300 300" preserveAspectRatio="xMidYMax meet" role="img" data-i18n-aria="treeAria" id="treeSvg">
+        <defs>
+          <radialGradient id="cg" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#4FB878"/><stop offset="1" stop-color="#1F7A4D"/></radialGradient>
+          <radialGradient id="gl" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#F6E7A1" stop-opacity=".45"/><stop offset="1" stop-color="#F6E7A1" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse cx="150" cy="278" rx="130" ry="14" fill="#06201c"/>
+        <ellipse cx="150" cy="190" rx="140" ry="110" fill="url(#gl)" opacity=".5"/>
+        <g id="treeG"><g id="treeInner"></g></g>
+      </svg>
+      <div id="ffLayer"></div>
+      <div class="celebrate" id="celebrate" role="status" data-demo="level-up-banner"></div>
+    </div>
+    <div class="lvl"><b id="lvName" data-demo="level-name"></b><span id="lvNext" data-demo="level-next"></span></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="barFill"></i></div>
+    <div class="stats">
+      <div class="stat"><b id="sTotal" data-demo="stat-total">0</b><small data-i18n="sTotal"></small></div>
+      <div class="stat"><b id="sMine" data-demo="stat-mine">0</b><small data-i18n="sMine"></small></div>
+      <div class="stat"><b id="sFf">0</b><small data-i18n="sFf"></small></div>
+    </div>
+  </section>
+
+  <div class="right">
+    <section class="card" aria-labelledby="sendH">
+      <h2 id="sendH" data-i18n="sendTitle"></h2>
+      <div data-i18n-aria="toAria" role="group" aria-label="">
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="stamps" id="stamps"></div>
+      <input type="text" id="note" maxlength="60" data-demo="note-input" data-i18n-ph="notePh" data-i18n-aria="notePh" autocomplete="off">
+      <p class="hint" data-i18n="hint"></p>
+      <div class="toast" id="toast" role="status" aria-live="polite" data-demo="toast"></div>
+    </section>
+
+    <section class="card" aria-labelledby="feedH">
+      <h2 id="feedH" data-i18n="feedTitle"></h2>
+      <ul class="feed" id="feed" data-demo="feed"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="rankH">
+      <h2 id="rankH" data-i18n="rankTitle"></h2>
+      <div class="rank" id="rank" data-demo="glow-ranking"></div>
+    </section>
+
+    <div class="foot"><span data-i18n="footer"></span><button class="reset" id="reset" data-demo="reset" type="button" data-i18n="reset"></button></div>
+  </div>
+</main>
+
+<script>
+const I18N={
+ja:{
+title:"Glow Grove – ありがとうの森",
+tagline:"ありがとうが、ほたるの光になる。",
+langAria:"言語を切り替える（日本語 / English）",
+treeTitle:"チームの感謝の木",
+treeAria:"みんなで育てる感謝の木",
+lvName:"Lv.{n} {name}",
+lvN:["苗木","若木","大樹","花満開"],
+next:"{name}まであと {n} スタンプ",
+max:"花満開！みんなの感謝が森を照らしています 🌸",
+sTotal:"ありがとう",sMine:"あなたが送った",sFf:"ほたる",
+sendTitle:"どの気持ちを送る？",
+toAria:"送る相手",
+notePh:"ひとこと添える（任意）",
+hint:"スタンプをタップすると、すぐに送れます。ひとことは次の1回に添えられます。",
+feedTitle:"森のできごと",
+rankTitle:"ほたるをもらった人",
+footer:"チームの小さな「ありがとう」を、森の光に。",
+reset:"デモをリセット",
+resetDone:"森をはじめの状態に戻しました。",
+sent:"{stamp} を {to} に送ったよ！ほたるが1匹増えました ✨",
+levelUp:"🎉 Lv.{n} {name} に成長！",
+now:"たった今",min:"{n}分前",hour:"{n}時間前",day:"{n}日前",
+you:"あなた",
+people:{aya:"あや",ken:"けん",mio:"みお",sora:"そら",team:"チームみんな"},
+stamps:{thanks:"ありがとう",help:"助かった",wow:"すごい！",tired:"おつかれさま",idea:"ナイスアイデア",glad:"心強い"},
+msgs:{m1:"昨日のレビュー、丁寧で本当に助かりました！",m2:"締め切り前も落ち着いていて心強かったです。",m3:"資料のアイデア最高でした✨"}
+},
+en:{
+title:"Glow Grove – A Grove of Thanks",
+tagline:"Every thanks makes us glow.",
+langAria:"Switch language (日本語 / English)",
+treeTitle:"Our Thank-You Tree",
+treeAria:"The thank-you tree we grow together",
+lvName:"Lv.{n} {name}",
+lvN:["Seedling","Sapling","Great Tree","Full Bloom"],
+next:"{n} more stamps to {name}",
+max:"Full bloom! Your thanks light up the grove 🌸",
+sTotal:"Thanks",sMine:"You sent",sFf:"Fireflies",
+sendTitle:"Which feeling will you send?",
+toAria:"Send to",
+notePh:"Add a short note (optional)",
+hint:"Tap a stamp to send it right away. Your note goes with the next one.",
+feedTitle:"Grove news",
+rankTitle:"Who is glowing",
+footer:"Turn small team thank-yous into light.",
+reset:"Reset demo",
+resetDone:"The grove is back to the start.",
+sent:"Sent {stamp} to {to}! One more firefly joined ✨",
+levelUp:"🎉 Grew to Lv.{n} {name}!",
+now:"just now",min:"{n} min ago",hour:"{n} h ago",day:"{n} d ago",
+you:"You",
+people:{aya:"Aya",ken:"Ken",mio:"Mio",sora:"Sora",team:"Whole team"},
+stamps:{thanks:"Thank you",help:"You saved me",wow:"Amazing!",tired:"Good work",idea:"Great idea",glad:"Glad you're here"},
+msgs:{m1:"Your careful review yesterday really helped!",m2:"You stayed calm before the deadline. Thank you.",m3:"Your idea for the slides was brilliant ✨"}
+}};
+const STAMPS=[["thanks","🙏"],["help","💪"],["wow","✨"],["tired","☕"],["idea","💡"],["glad","🤝"]];
+const PEOPLE=["team","aya","ken","mio","sora"];
+const EMO={aya:"🦊",ken:"🐻",mio:"🐰",sora:"🦉",you:"🌙",team:"🌳"};
+const LV=[0,5,15,30];
+const KEY="glowgrove-v1";
+let lang="en",state=null,to="team",toastT=null,celT=null;
+const $=id=>document.getElementById(id);
+const t=(k)=>I18N[lang][k];
+const fmt=(s,o)=>s.replace(/\{(\w+)\}/g,(_,k)=>o[k]);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pname=id=>id==="you"?t("you"):t("people")[id];
+
+function initLang(){
+  let l=null;
+  if(window.APP_LANG==="ja"||window.APP_LANG==="en")l=window.APP_LANG;
+  if(!l){try{const q=new URLSearchParams(location.search).get("lang");if(q==="ja"||q==="en")l=q}catch(e){}}
+  if(!l){try{const s=localStorage.getItem("lang");if(s==="ja"||s==="en")l=s}catch(e){}}
+  lang=l||"en";
+}
+function freshState(){
+  const n=Date.now(),m=60000;
+  return{total:12,mine:2,recv:{aya:3,ken:3,mio:4,sora:2,team:0},
+    feed:[
+      {from:"aya",to:"ken",stamp:"help",mk:"m1",ts:n-6*m},
+      {from:"sora",to:"mio",stamp:"wow",mk:"m3",ts:n-42*m},
+      {from:"mio",to:"aya",stamp:"tired",ts:n-130*m},
+      {from:"ken",to:"team",stamp:"thanks",mk:"m2",ts:n-300*m}
+    ]};
+}
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&typeof s.total==="number"&&Array.isArray(s.feed)){state=s;return}}catch(e){}
+  state=freshState();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function lvl(n){let l=1;for(let i=1;i<LV.length;i++)if(n>=LV[i])l=i+1;return l}
+
+/* ---------- tree drawing ---------- */
+function treeSvg(l){
+  let s="";
+  if(l===1){
+    s+='<path d="M150 272 C150 252 148 238 150 222" stroke="#6BBF84" stroke-width="6" fill="none" stroke-linecap="round"/>';
+    s+='<ellipse cx="134" cy="222" rx="18" ry="9" transform="rotate(-28 134 222)" fill="#43A86B"/><ellipse cx="166" cy="214" rx="18" ry="9" transform="rotate(28 166 214)" fill="#56BD7C"/>';
+    s+='<circle cx="150" cy="212" r="3" fill="#F6E7A1"/>';
+    return s;
+  }
+  const w=l===2?12:l===3?22:24;
+  s+='<path d="M150 274 C149 245 152 215 150 '+(l===2?185:165)+'" stroke="#6B4A2F" stroke-width="'+w+'" fill="none" stroke-linecap="round"/>';
+  if(l>=3)s+='<path d="M150 215 L118 180 M150 200 L186 168" stroke="#6B4A2F" stroke-width="9" stroke-linecap="round" fill="none"/>';
+  const C=l===2?[[150,160,46],[122,186,32],[178,186,32]]:[[150,118,62],[100,156,48],[200,156,48],[122,98,46],[180,98,46]];
+  C.forEach(c=>s+='<circle cx="'+c[0]+'" cy="'+c[1]+'" r="'+c[2]+'" fill="url(#cg)"/>');
+  const L=l===2?[[140,150],[165,170],[125,185]]:[[130,120],[170,95],[100,160],[200,150],[150,150],[120,80],[185,125]];
+  L.forEach((p,i)=>s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3" fill="#F6E7A1"><animate attributeName="opacity" values=".3;1;.3" dur="'+(2+i*.4)+'s" repeatCount="indefinite"/></circle>');
+  if(l===3){[[110,140],[170,80],[205,165],[140,100]].forEach(p=>s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="#FFB7C9"/>')}
+  if(l===4){
+    const B=[[100,120],[130,70],[160,60],[190,90],[210,140],[80,160],[120,150],[150,95],[175,135],[205,175],[95,185],[140,125],[165,160],[110,95],[185,60],[225,150]];
+    B.forEach(p=>s+='<g transform="translate('+p[0]+' '+p[1]+')"><circle r="7" fill="#FFB7C9"/><circle cx="-4" cy="-3" r="4" fill="#FFD3DF"/><circle cx="4" cy="-3" r="4" fill="#FFD3DF"/><circle cx="0" cy="4" r="4" fill="#FFD3DF"/><circle r="2.2" fill="#F6E7A1"/></g>');
+    [[110,100,5],[160,80,7],[200,110,6],[140,140,8]].forEach(p=>s+='<ellipse class="petal" cx="'+p[0]+'" cy="'+p[1]+'" rx="3" ry="2" fill="#FFD3DF" style="--f:'+p[2]+'s;animation-delay:-'+(p[2]/2)+'s"/>');
+  }
+  return s;
+}
+let drawnLv=0;
+function drawTree(){
+  const n=state.total,l=lvl(n);
+  if(l!==drawnLv){$("treeInner").innerHTML=treeSvg(l);drawnLv=l}
+  let p=1;
+  if(l<LV.length)p=(n-LV[l-1])/(LV[l]-LV[l-1]);
+  const sc=l===4?1:(l===1?.7:.82)+.18*p*(l===1?1.5:1);
+  $("treeG").style.transform="scale("+Math.min(sc,1)+")";
+}
+function syncFireflies(){
+  const layer=$("ffLayer"),want=Math.min(state.total,30);
+  while(layer.children.length>want)layer.lastChild.remove();
+  while(layer.children.length<want)addFirefly(false);
+}
+function addFirefly(){
+  const d=document.createElement("i");d.className="ff";
+  const r=(a,b)=>a+Math.random()*(b-a);
+  d.style.left=r(6,92)+"%";d.style.top=r(8,82)+"%";
+  d.style.setProperty("--x",r(-30,30)+"px");d.style.setProperty("--y",r(-30,30)+"px");
+  d.style.setProperty("--d",r(3,7)+"s");d.style.setProperty("--b",r(1.8,4)+"s");
+  d.style.animationDelay="-"+r(0,4)+"s";
+  $("ffLayer").appendChild(d);
+}
+function fly(from){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const s=$("stage").getBoundingClientRect(),b=from.getBoundingClientRect();
+  const x=b.left+b.width/2,y=b.top+b.height/2;
+  const dot=document.createElement("div");dot.className="fly";
+  dot.style.left=x-5+"px";dot.style.top=y-5+"px";document.body.appendChild(dot);
+  const dx=s.left+s.width*.5-x,dy=s.top+s.height*.45-y;
+  const a=dot.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:"translate("+dx*.5+"px,"+(dy*.5-50)+"px) scale(1.4)",opacity:1,offset:.5},{transform:"translate("+dx+"px,"+dy+"px) scale(.4)",opacity:.1}],{duration:950,easing:"ease-in-out"});
+  a.onfinish=()=>dot.remove();
+}
+
+/* ---------- render ---------- */
+function ago(ts){
+  const m=Math.max(0,Math.floor((Date.now()-ts)/60000));
+  if(m<1)return t("now");
+  if(m<60)return fmt(t("min"),{n:m});
+  if(m<1440)return fmt(t("hour"),{n:Math.floor(m/60)});
+  return fmt(t("day"),{n:Math.floor(m/1440)});
+}
+function renderStatic(){
+  document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll("[data-i18n-aria]").forEach(e=>e.setAttribute("aria-label",t(e.dataset.i18nAria)));
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+  document.documentElement.lang=lang;document.title=t("title");
+  $("lj").className=lang==="ja"?"on":"";$("le").className=lang==="en"?"on":"";
+  $("chips").innerHTML=PEOPLE.map(id=>'<button type="button" class="chip" data-demo="to-'+id+'" data-to="'+id+'" aria-pressed="'+(id===to)+'">'+EMO[id]+" "+esc(pname(id))+"</button>").join("");
+  $("stamps").innerHTML=STAMPS.map(s=>'<button type="button" class="stamp" data-demo="stamp-'+s[0]+'" data-stamp="'+s[0]+'"><span class="e" aria-hidden="true">'+s[1]+"</span>"+esc(t("stamps")[s[0]])+"</button>").join("");
+}
+function render(){
+  const n=state.total,l=lvl(n),names=t("lvN");
+  $("lvName").textContent=fmt(t("lvName"),{n:l,name:names[l-1]});
+  let pct=100;
+  if(l<LV.length){
+    pct=Math.round((n-LV[l-1])/(LV[l]-LV[l-1])*100);
+    $("lvNext").textContent=fmt(t("next"),{n:LV[l]-n,name:"Lv."+(l+1)+" "+names[l]});
+  }else $("lvNext").textContent=t("max");
+  $("barFill").style.width=pct+"%";$("barWrap").setAttribute("aria-valuenow",pct);
+  $("barWrap").setAttribute("aria-label",$("lvName").textContent);
+  $("sTotal").textContent=n;$("sMine").textContent=state.mine;$("sFf").textContent=Math.min(n,30);
+  drawTree();
+  $("feed").innerHTML=state.feed.slice(0,8).map(f=>{
+    const msg=f.msg||(f.mk?t("msgs")[f.mk]:"");
+    return '<li><div class="av" aria-hidden="true">'+EMO[f.from]+'</div><div class="fb"><div class="fl">'+esc(pname(f.from))+" → "+esc(pname(f.to))+'<span class="st">'+esc(STAMPS.find(s=>s[0]===f.stamp)[1]+" "+t("stamps")[f.stamp])+'</span></div>'+(msg?'<div class="fm">'+esc(msg)+"</div>":"")+'<div class="ft">'+ago(f.ts)+"</div></div></li>";
+  }).join("");
+  const ids=["aya","ken","mio","sora"].sort((a,b)=>state.recv[b]-state.recv[a]);
+  const max=Math.max(1,...ids.map(i=>state.recv[i]));
+  $("rank").innerHTML=ids.map(i=>'<div class="rk"><span aria-hidden="true">'+EMO[i]+"</span><span>"+esc(pname(i))+'</span><div class="bar"><i style="width:'+Math.round(state.recv[i]/max*100)+'%"></i></div><b>'+state.recv[i]+"</b></div>").join("");
+  syncFireflies();
+}
+function toast(msg){
+  const e=$("toast");e.textContent=msg;e.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),3800);
+}
+function celebrate(l){
+  const e=$("celebrate");e.textContent=fmt(t("levelUp"),{n:l,name:t("lvN")[l-1]});
+  e.classList.add("show");clearTimeout(celT);celT=setTimeout(()=>e.classList.remove("show"),3800);
+}
+
+/* ---------- actions ---------- */
+function send(stamp,btn){
+  const note=$("note").value.trim();
+  const before=lvl(state.total);
+  state.total++;state.mine++;
+  if(to!=="team")state.recv[to]=(state.recv[to]||0)+1;
+  const entry={from:"you",to:to,stamp:stamp,ts:Date.now()};
+  if(note)entry.msg=note;
+  state.feed.unshift(entry);state.feed=state.feed.slice(0,20);
+  $("note").value="";
+  save();fly(btn);
+  setTimeout(()=>{
+    render();
+    toast(fmt(t("sent"),{stamp:STAMPS.find(s=>s[0]===stamp)[1]+" "+t("stamps")[stamp],to:pname(to)}));
+    const after=lvl(state.total);
+    if(after>before)celebrate(after);
+  },reduced()?0:700);
+}
+function reduced(){return window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches}
+function setLang(l){
+  lang=l;try{localStorage.setItem("lang",l)}catch(e){}
+  renderStatic();render();
+}
+
+document.addEventListener("click",ev=>{
+  const c=ev.target.closest("[data-to]");
+  if(c){to=c.dataset.to;document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x.dataset.to===to));return}
+  const s=ev.target.closest("[data-stamp]");
+  if(s){send(s.dataset.stamp,s)}
+});
+$("langBtn").addEventListener("click",()=>setLang(lang==="ja"?"en":"ja"));
+$("reset").addEventListener("click",()=>{
+  state=freshState();save();to="team";drawnLv=0;
+  $("ffLayer").innerHTML="";renderStatic();render();toast(t("resetDone"));
+});
+
+initLang();load();renderStatic();render();
+</script>
+</body>
+</html>
